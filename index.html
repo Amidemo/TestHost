@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Крестики-Нолики | Tic-Tac-Toe Pro</title>
+    <title>Милая Одевалка | Cute Dress-Up Game</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Poppins', 'sans-serif'],
                     },
                     colors: {
-                        brand: {
-                            x: '#3B82F6', // Blue
-                            o: '#EC4899', // Pink
-                            accent: '#8B5CF6', // Purple
+                        pastel: {
+                            pink: '#FFD1DC',
+                            purple: '#E4C1F9',
+                            blue: '#D0F4DE',
+                            yellow: '#FDFCDC',
+                            mint: '#C1FBA4',
+                            peach: '#FFCBC1'
                         }
                     }
                 }
@@ -31,184 +34,185 @@
     </script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Glassmorphism Backgrounds */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.6);
         }
 
         .dark .glass-panel {
-            background: rgba(17, 24, 39, 0.75);
+            background: rgba(30, 27, 45, 0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        .wardrobe-tab {
+            transition: all 0.25s ease;
+        }
+        .wardrobe-tab.active {
+            background: linear-gradient(135deg, #FF758C 0%, #FF7EB3 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+            transform: translateY(-2px);
         }
 
-        .dark .glass-card {
-            background: rgba(31, 41, 55, 0.5);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Cell animations and active states */
-        .cell-btn {
+        .item-card {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .cell-btn:active {
-            transform: scale(0.92);
+        .item-card:hover {
+            transform: translateY(-4px) scale(1.03);
+        }
+        .item-card:active {
+            transform: scale(0.95);
+        }
+        .item-card.selected {
+            border-color: #FF758C;
+            background-color: rgba(255, 117, 140, 0.15);
+            box-shadow: 0 0 12px rgba(255, 117, 140, 0.4);
         }
 
-        .win-cell {
-            animation: pulse-glow 1.2s infinite alternate;
-        }
-
-        @keyframes pulse-glow {
-            0% { transform: scale(1); filter: brightness(1); }
-            100% { transform: scale(1.03); filter: brightness(1.25); }
-        }
-
-        /* Custom Scrollbar */
+        /* Custom scrollbar for wardrobe grid */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(0,0,0,0.03);
+            border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(156, 163, 175, 0.5);
-            border-radius: 3px;
+            background: rgba(255, 117, 140, 0.4);
+            border-radius: 4px;
+        }
+
+        @keyframes bounce-gentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-bounce-gentle {
+            animation: bounce-gentle 3s ease-in-out infinite;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
+<body class="bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 dark:from-gray-900 dark:via-purple-950 dark:to-indigo-950 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
 
-    <!-- Top Bar Header -->
-    <header class="w-full max-w-4xl mx-auto px-4 pt-4 pb-2 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-md font-bold text-xl">
-                ✕◯
+    <header class="w-full max-w-5xl mx-auto px-4 pt-4 pb-2 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-400 to-purple-500 flex items-center justify-center text-white shadow-lg text-2xl font-bold animate-bounce-gentle">
+                👗
             </div>
-            <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                TicTacToe Pro
-            </h1>
+            <div>
+                <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-600 dark:from-pink-400 dark:to-purple-400">
+                    Каваи Одевалка ✨
+                </h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Создай свой неповторимый образ!</p>
+            </div>
         </div>
 
         <div class="flex items-center gap-2">
-            <!-- Mute Audio Toggle -->
-            <button id="soundToggleBtn" title="Включить/Выключить звук" class="p-2.5 rounded-xl glass-card hover:bg-white/80 dark:hover:bg-gray-800/80 transition text-gray-700 dark:text-gray-200">
-                <i id="soundIcon" class="fas fa-volume-up text-lg"></i>
+            <button id="soundToggleBtn" title="Звук" class="p-3 rounded-2xl glass-panel hover:bg-white/90 transition shadow-sm text-gray-700 dark:text-gray-200">
+                <i id="soundIcon" class="fas fa-volume-up text-base"></i>
             </button>
-            <!-- Theme Toggle Button -->
-            <button id="themeToggleBtn" title="Сменить тему" class="p-2.5 rounded-xl glass-card hover:bg-white/80 dark:hover:bg-gray-800/80 transition text-gray-700 dark:text-gray-200">
-                <i id="themeIcon" class="fas fa-moon text-lg"></i>
+            <button id="themeToggleBtn" title="Сменить тему" class="p-3 rounded-2xl glass-panel hover:bg-white/90 transition shadow-sm text-gray-700 dark:text-gray-200">
+                <i id="themeIcon" class="fas fa-moon text-base"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="w-full max-w-lg mx-auto px-4 my-auto py-2 flex flex-col gap-4">
+    <main class="w-full max-w-5xl mx-auto px-4 my-auto py-3 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         
-        <!-- Game Configuration Panel -->
-        <div class="glass-panel p-4 rounded-2xl shadow-xl flex flex-col gap-3">
-            <!-- Game Mode Switcher -->
-            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-200/60 dark:bg-gray-800/60 rounded-xl text-xs font-semibold">
-                <button id="modePvP" class="py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400">
-                    <i class="fas fa-users mr-1"></i> Игрок vs Игрок
-                </button>
-                <button id="modeAI" class="py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-                    <i class="fas fa-robot mr-1"></i> Игрок vs Бот
-                </button>
-            </div>
+        <!-- Left Column: Character Stage -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center relative">
+            
+            <!-- Background glow / badge -->
+            <div class="absolute w-64 h-64 md:w-72 md:h-72 bg-gradient-to-tr from-pink-300/40 to-purple-300/40 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
-            <!-- AI Sub-settings (Hidden when PvP) -->
-            <div id="aiSettings" class="hidden flex flex-col gap-2 pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
-                <div class="flex items-center justify-between text-xs font-medium">
-                    <span class="text-gray-600 dark:text-gray-400">Сложность бота:</span>
-                    <div class="flex gap-1">
-                        <button data-diff="easy" class="diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition">Легко</button>
-                        <button data-diff="medium" class="diff-btn px-2.5 py-1 rounded-md bg-blue-600 text-white transition">Средне</button>
-                        <button data-diff="hard" class="diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition">Мастер</button>
-                    </div>
-                </div>
-            </div>
+            <!-- Avatar Container -->
+            <div class="relative w-72 h-[380px] md:w-80 md:h-[420px] glass-panel rounded-3xl shadow-2xl flex items-center justify-center p-4 overflow-hidden border-2 border-white/80 dark:border-white/10">
+                
+                <!-- SVG Doll Canvas -->
+                <svg id="avatarCanvas" viewBox="0 0 300 400" class="w-full h-full drop-shadow-md">
+                    <!-- Layers will be dynamically injected via JavaScript -->
+                </svg>
 
-            <!-- Player Symbol Selection -->
-            <div class="flex items-center justify-between text-xs font-medium pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
-                <span class="text-gray-600 dark:text-gray-400">Первый ход за:</span>
-                <div class="flex gap-2">
-                    <button id="selectX" class="px-3 py-1 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold transition">
-                        ✕ (Крестик)
+                <!-- Floating Action Buttons over stage -->
+                <div class="absolute bottom-4 left-4 right-4 flex justify-between gap-2">
+                    <button id="randomizeBtn" class="flex-1 py-2.5 px-3 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-pink-600 dark:text-pink-400 font-semibold text-xs rounded-xl shadow-md backdrop-blur-md transition flex items-center justify-center gap-1.5 border border-pink-200/50">
+                        <i class="fas fa-wand-magic-sparkles"></i> Случайно
                     </button>
-                    <button id="selectO" class="px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-pink-500 transition">
-                        ◯ (Нолик)
+                    <button id="resetBtn" class="py-2.5 px-3.5 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold text-xs rounded-xl shadow-md backdrop-blur-md transition flex items-center justify-center gap-1.5 border border-gray-200/50" title="Сбросить наряд">
+                        <i class="fas fa-rotate-right"></i>
+                    </button>
+                    <button id="saveBtn" class="py-2.5 px-3.5 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold text-xs rounded-xl shadow-md hover:opacity-90 transition flex items-center justify-center gap-1.5">
+                        <i class="fas fa-camera"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Scoreboard Panel -->
-        <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-blue-500">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="p1Label">Игрок X</div>
-                <div class="text-2xl font-extrabold text-blue-600 dark:text-blue-400" id="scoreP1">0</div>
+        <!-- Right Column: Wardrobe Panel -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+            
+            <!-- Wardrobe Categories Navigation Tabs -->
+            <div class="glass-panel p-2 rounded-2xl shadow-lg flex gap-1.5 overflow-x-auto">
+                <button data-cat="hair" class="wardrobe-tab active flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap">
+                    <i class="fas fa-cut"></i> Волосы
+                </button>
+                <button data-cat="tops" class="wardrobe-tab flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-white/50">
+                    <i class="fas fa-shirt"></i> Верх
+                </button>
+                <button data-cat="bottoms" class="wardrobe-tab flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-white/50">
+                    <i class="fas fa-socks"></i> Низ
+                </button>
+                <button data-cat="shoes" class="wardrobe-tab flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-white/50">
+                    <i class="fas fa-shoe-prints"></i> Обувь
+                </button>
+                <button data-cat="accessories" class="wardrobe-tab flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-white/50">
+                    <i class="fas fa-hat-wizard"></i> Аксессуары
+                </button>
             </div>
-            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-purple-500">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Ничьи</div>
-                <div class="text-2xl font-extrabold text-purple-600 dark:text-purple-400" id="scoreTies">0</div>
+
+            <!-- Items Selection Grid -->
+            <div class="glass-panel p-4 rounded-3xl shadow-xl h-[320px] md:h-[360px] flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 id="categoryTitle" class="text-sm font-bold text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                        <i class="fas fa-sparkles text-pink-500"></i> Выберите прическу
+                    </h3>
+                    <span id="itemCountBadge" class="text-xs bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 font-semibold px-2.5 py-1 rounded-full">
+                        4 варианта
+                    </span>
+                </div>
+
+                <!-- Grid items container -->
+                <div id="wardrobeGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto pr-1 flex-1">
+                    <!-- Populated dynamically via JS -->
+                </div>
             </div>
-            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-pink-500">
-                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="p2Label">Игрок O</div>
-                <div class="text-2xl font-extrabold text-pink-600 dark:text-pink-400" id="scoreP2">0</div>
-            </div>
+
         </div>
 
-        <!-- Status Bar -->
-        <div class="text-center py-1">
-            <span id="turnIndicator" class="inline-block px-4 py-1.5 rounded-full glass-card font-semibold text-sm shadow-sm border border-white/40 dark:border-gray-700">
-                Ход: <span id="currentTurnText" class="text-blue-600 dark:text-blue-400 font-bold">✕</span>
-            </span>
-        </div>
-
-        <!-- Game Board Matrix -->
-        <div class="relative aspect-square w-full max-w-[360px] mx-auto">
-            <div id="board" class="grid grid-cols-3 gap-3 w-full h-full p-3 glass-panel rounded-3xl shadow-2xl">
-                <!-- Cells generated via JavaScript -->
-            </div>
-        </div>
-
-        <!-- Action Control Buttons -->
-        <div class="flex justify-between gap-3 mt-2">
-            <button id="resetRoundBtn" class="flex-1 py-3 px-4 glass-panel hover:bg-white/90 dark:hover:bg-gray-800/90 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                <i class="fas fa-rotate-right text-blue-500"></i> Сбросить раунд
-            </button>
-            <button id="resetStatsBtn" class="py-3 px-4 glass-panel hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 font-bold text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Сбросить всю статистику">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        </div>
     </main>
 
-    <!-- Footer -->
     <footer class="w-full text-center py-3 text-xs text-gray-500 dark:text-gray-400">
-        Готово для GitHub Pages • Made with <i class="fas fa-heart text-red-500"></i>
+        Готово для GitHub Pages • Сделано с любовью 💖
     </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 transition-all duration-300 z-50 glass-panel px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-pink-300/50">
+        <span id="toastIcon" class="text-xl">✨</span>
+        <span id="toastText" class="text-xs font-bold text-gray-800 dark:text-gray-100">Образ успешно сохранен!</span>
+    </div>
 
     <script>
         /* ===================================================================
-           1. Web Audio API Engine (Sound Effects without external files)
+           1. Web Audio API Cute Sound Synthesizer
            =================================================================== */
         class SoundEngine {
             constructor() {
@@ -223,18 +227,17 @@
                 }
             }
 
-            playMove(isX) {
+            playPop() {
                 if (this.muted) return;
                 this.init();
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'sine';
                 
-                // Frequency pitch depending on symbol
-                osc.frequency.setValueAtTime(isX ? 520 : 400, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(isX ? 260 : 200, this.ctx.currentTime + 0.08);
+                osc.frequency.setValueAtTime(580, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
 
-                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
 
                 osc.connect(gain);
@@ -243,462 +246,268 @@
                 osc.stop(this.ctx.currentTime + 0.08);
             }
 
-            playWin() {
+            playSparkle() {
                 if (this.muted) return;
                 this.init();
-                const notes = [440, 554.37, 659.25, 880]; // A major arpeggio
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
                 notes.forEach((freq, idx) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
 
-                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.3);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime + idx * 0.06);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.06 + 0.2);
 
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start(this.ctx.currentTime + idx * 0.08);
-                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.3);
+                    osc.start(this.ctx.currentTime + idx * 0.06);
+                    osc.stop(this.ctx.currentTime + idx * 0.06 + 0.2);
                 });
-            }
-
-            playTie() {
-                if (this.muted) return;
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(150, this.ctx.currentTime + 0.25);
-
-                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
             }
         }
 
         const sounds = new SoundEngine();
 
         /* ===================================================================
-           2. State Management & Variables
+           2. Wardrobe Catalog & SVG Asset Definitions
            =================================================================== */
-        const WIN_COMBINATIONS = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6]             // Diagonals
-        ];
-
-        let gameState = {
-            board: Array(9).fill(null),
-            currentPlayer: 'X',
-            userSymbol: 'X',
-            aiSymbol: 'O',
-            isAiMode: false,
-            aiDifficulty: 'medium', // 'easy', 'medium', 'hard'
-            gameActive: true,
-            stats: { p1: 0, ties: 0, p2: 0 }
+        const wardrobeData = {
+            hair: [
+                { id: 0, name: 'Хвостики', icon: '🎀', svg: '<path d="M110 110 C90 100 80 70 95 50 C105 35 120 40 125 50 C130 35 145 35 155 50 C170 70 160 100 140 110 Z" fill="#E06D53"/><circle cx="85" cy="45" r="12" fill="#FF758C"/><circle cx="165" cy="45" r="12" fill="#FF758C"/><path d="M85 55 L75 80 M165 55 L175 80" stroke="#E06D53" stroke-width="8" stroke-linecap="round"/>' },
+                { id: 1, name: 'Длинные блонд', icon: '👱‍♀️', svg: '<path d="M100 100 C80 80 85 45 125 45 C165 45 170 80 150 100 C175 150 185 240 165 260 C150 275 140 250 145 210 C130 230 120 230 105 210 C110 250 100 275 85 260 C65 240 75 150 100 100 Z" fill="#F4D06F"/><path d="M100 45 C125 35 150 45 155 50 C140 40 110 40 100 45 Z" fill="#F9E79F"/>' },
+                { id: 2, name: 'Розовое каре', icon: '🌸', svg: '<path d="M95 105 C75 90 80 50 125 50 C170 50 175 90 155 105 C175 140 165 180 145 170 C135 165 130 150 125 150 C120 150 115 165 105 170 C85 180 75 140 95 105 Z" fill="#FF85A1"/><circle cx="150" cy="55" r="10" fill="#FFAFCC"/>' },
+                { id: 3, name: 'Темный пучок', icon: '🌙', svg: '<circle cx="125" cy="30" r="22" fill="#2D3748"/><path d="M95 105 C75 90 80 50 125 50 C170 50 175 90 155 105 C165 125 155 140 140 135 C130 130 125 115 125 115 C125 115 120 130 110 135 C95 140 85 125 95 105 Z" fill="#2D3748"/>' }
+            ],
+            tops: [
+                { id: 0, name: 'Каваи Худи', icon: '🧥', svg: '<path d="M85 215 L105 185 L145 185 L165 215 L190 230 L170 255 L155 235 L155 295 L95 295 L95 235 L80 255 L60 230 Z" fill="#B5E2FA"/><circle cx="125" cy="225" r="14" fill="#FFFFFF"/><text x="120" y="230" font-size="14">💖</text>' },
+                { id: 1, name: 'Топ с сердцем', icon: '👕', svg: '<path d="M95 185 L155 185 L165 235 L135 240 L125 220 L115 240 L85 235 Z" fill="#FFB7B2"/><path d="M125 205 C120 200 115 208 125 216 C135 208 130 200 125 205 Z" fill="#FF5964"/>' },
+                { id: 2, name: 'Матроска', icon: '⚓', svg: '<path d="M85 185 L165 185 L175 245 L155 245 L155 295 L95 295 L95 245 L75 245 Z" fill="#FFFFFF"/><polygon points="85,185 165,185 150,225 100,225" fill="#3B82F6"/><path d="M110 185 L125 210 L140 185" fill="none" stroke="#FFFFFF" stroke-width="3"/>' },
+                { id: 3, name: 'Пастельное платье', icon: '👗', svg: '<path d="M95 185 L155 185 L175 325 L75 325 Z" fill="#E4C1F9"/><path d="M95 185 L125 215 L155 185" fill="#D7B3EE"/><circle cx="125" cy="260" r="8" fill="#FFFFFF"/><circle cx="110" cy="285" r="6" fill="#FFFFFF"/><circle cx="140" cy="285" r="6" fill="#FFFFFF"/>' }
+            ],
+            bottoms: [
+                { id: 0, name: 'Плиссированная юбка', icon: '🩱', svg: '<path d="M95 295 L155 295 L165 345 L85 345 Z" fill="#3B82F6"/><line x1="110" y1="295" x2="105" y2="345" stroke="#2563EB" stroke-width="2"/><line x1="125" y1="295" x2="125" y2="345" stroke="#2563EB" stroke-width="2"/><line x1="140" y1="295" x2="145" y2="345" stroke="#2563EB" stroke-width="2"/>' },
+                { id: 1, name: 'Милые шортики', icon: '🩳', svg: '<path d="M95 295 L155 295 L155 350 L135 350 L125 325 L115 350 L95 350 Z" fill="#FFD1DC"/>' },
+                { id: 2, name: 'Розовая юбочка', icon: '🩰', svg: '<path d="M90 295 L160 295 L170 340 C170 350 80 350 80 340 Z" fill="#FF85A1"/><path d="M85 315 L165 315" stroke="#FFAFCC" stroke-width="3" stroke-dasharray="4,4"/>' },
+                { id: 3, name: 'Дин. брюки', icon: '👖', svg: '<path d="M98 295 L152 295 L155 365 L138 365 L128 335 L122 335 L112 365 L95 365 Z" fill="#60A5FA"/>' }
+            ],
+            shoes: [
+                { id: 0, name: 'Белые кеды', icon: '👟', svg: '<path d="M93 365 L118 365 L118 380 L90 380 C87 380 87 370 93 365 Z" fill="#FFFFFF"/><path d="M132 365 L157 365 C163 370 163 380 160 380 L132 380 Z" fill="#FFFFFF"/><circle cx="100" cy="372" r="3" fill="#E11D48"/><circle cx="150" cy="372" r="3" fill="#E11D48"/>' },
+                { id: 1, name: 'Розовые туфельки', icon: '🥿', svg: '<path d="M90 370 L118 370 L118 382 L88 382 C85 382 85 370 90 370 Z" fill="#FF758C"/><path d="M132 370 L160 370 C165 370 165 382 162 382 L132 382 Z" fill="#FF758C"/><path d="M98 370 L110 364" stroke="#FF758C" stroke-width="2"/><path d="M142 370 L154 364" stroke="#FF758C" stroke-width="2"/>' },
+                { id: 2, name: 'Милые ботинки', icon: '🥾', svg: '<path d="M88 360 L118 360 L118 382 L85 382 Z" fill="#9A3412"/><path d="M132 360 L162 360 L165 382 L132 382 Z" fill="#9A3412"/>' },
+                { id: 3, name: 'Тапочки лапки', icon: '🐾', svg: '<ellipse cx="103" cy="373" rx="15" ry="9" fill="#FDE047"/><ellipse cx="147" cy="373" rx="15" ry="9" fill="#FDE047"/>' }
+            ],
+            accessories: [
+                { id: 0, name: 'Кошачьи ушки', icon: '🐱', svg: '<polygon points="95,45 110,15 125,40" fill="#2D3748"/><polygon points="125,40 140,15 155,45" fill="#2D3748"/><polygon points="100,40 110,23 118,37" fill="#FEB2B2"/><polygon points="132,37 140,23 150,40" fill="#FEB2B2"/>' },
+                { id: 1, name: 'Очки сердечки', icon: '👓', svg: '<path d="M102 75 C95 65 85 70 90 80 C95 90 108 90 112 80 Z" fill="none" stroke="#FF5964" stroke-width="3"/><path d="M138 75 C132 70 122 65 118 80 C122 90 135 90 140 80 Z" fill="none" stroke="#FF5964" stroke-width="3"/><line x1="112" y1="78" x2="138" y2="78" stroke="#FF5964" stroke-width="3"/>' },
+                { id: 2, name: 'Бантик на шею', icon: '🎀', svg: '<polygon points="125,185 115,175 115,195" fill="#EF4444"/><polygon points="125,185 135,175 135,195" fill="#EF4444"/><circle cx="125" cy="185" r="4" fill="#B91C1C"/>' },
+                { id: 3, name: 'Звездный ободок', icon: '⭐', svg: '<path d="M90 60 Q125 30 160 60" fill="none" stroke="#FBBF24" stroke-width="3"/><polygon points="125,32 128,40 136,40 130,45 132,53 125,48 118,53 120,45 114,40 122,40" fill="#F59E0B"/>' }
+            ]
         };
 
-        /* ===================================================================
-           3. LocalStorage Handling
-           =================================================================== */
-        function loadStats() {
-            const saved = localStorage.getItem('tictactoe_stats');
-            if (saved) {
-                try {
-                    gameState.stats = JSON.parse(saved);
-                } catch (e) {
-                    console.error("Failed to parse saved stats", e);
-                }
-            }
-            updateScoreboardDisplay();
-        }
+        let currentOutfit = {
+            hair: 0,
+            tops: 0,
+            bottoms: 0,
+            shoes: 0,
+            accessories: 0
+        };
 
-        function saveStats() {
-            localStorage.setItem('tictactoe_stats', JSON.stringify(gameState.stats));
-            updateScoreboardDisplay();
-        }
+        let activeCategory = 'hair';
 
         /* ===================================================================
-           4. DOM Elements
+           3. Avatar Rendering Engine
            =================================================================== */
-        const boardEl = document.getElementById('board');
-        const turnIndicatorText = document.getElementById('currentTurnText');
-        const modePvPBtn = document.getElementById('modePvP');
-        const modeAIBtn = document.getElementById('modeAI');
-        const aiSettingsEl = document.getElementById('aiSettings');
-        const selectXBtn = document.getElementById('selectX');
-        const selectOBtn = document.getElementById('selectO');
-        const scoreP1El = document.getElementById('scoreP1');
-        const scoreTiesEl = document.getElementById('scoreTies');
-        const scoreP2El = document.getElementById('scoreP2');
-        const p1LabelEl = document.getElementById('p1Label');
-        const p2LabelEl = document.getElementById('p2Label');
-        const resetRoundBtn = document.getElementById('resetRoundBtn');
-        const resetStatsBtn = document.getElementById('resetStatsBtn');
+        const avatarCanvas = document.getElementById('avatarCanvas');
+
+        function renderAvatar() {
+            // Base doll SVG structure (Chibi character base)
+            let svgContent = `
+                <!-- Background aura -->
+                <circle cx="125" cy="200" r="110" fill="rgba(255, 255, 255, 0.4)" />
+                
+                <!-- Character Body Base -->
+                <!-- Legs -->
+                <rect x="108" y="320" width="12" height="50" rx="6" fill="#FEE2E7"/>
+                <rect x="130" y="320" width="12" height="50" rx="6" fill="#FEE2E7"/>
+                
+                <!-- Shoes Layer -->
+                ${wardrobeData.shoes[currentOutfit.shoes].svg}
+
+                <!-- Torso / Skin -->
+                <path d="M100 170 C100 160 150 160 150 170 L155 295 L95 295 Z" fill="#FEE2E7"/>
+
+                <!-- Bottoms Layer -->
+                ${wardrobeData.bottoms[currentOutfit.bottoms].svg}
+
+                <!-- Tops Layer -->
+                ${wardrobeData.tops[currentOutfit.tops].svg}
+
+                <!-- Hands -->
+                <circle cx="88" cy="210" r="9" fill="#FEE2E7"/>
+                <circle cx="162" cy="210" r="9" fill="#FEE2E7"/>
+
+                <!-- Head / Face -->
+                <circle cx="125" cy="115" r="42" fill="#FEE2E7"/>
+
+                <!-- Hair Back/Base if needed -->
+
+                <!-- Eyes -->
+                <ellipse cx="112" cy="115" rx="5" ry="7" fill="#2D3748"/>
+                <ellipse cx="138" cy="115" rx="5" ry="7" fill="#2D3748"/>
+                <circle cx="110" cy="113" r="2" fill="#FFFFFF"/>
+                <circle cx="136" cy="113" r="2" fill="#FFFFFF"/>
+
+                <!-- Blush -->
+                <ellipse cx="103" cy="125" rx="6" ry="3" fill="rgba(255, 117, 140, 0.4)"/>
+                <ellipse cx="147" cy="125" rx="6" ry="3" fill="rgba(255, 117, 140, 0.4)"/>
+
+                <!-- Mouth -->
+                <path d="M122 124 Q125 128 128 124" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round"/>
+
+                <!-- Hair Layer -->
+                ${wardrobeData.hair[currentOutfit.hair].svg}
+
+                <!-- Accessories Layer -->
+                ${wardrobeData.accessories[currentOutfit.accessories].svg}
+            `;
+
+            avatarCanvas.innerHTML = svgContent;
+        }
+
+        /* ===================================================================
+           4. Wardrobe UI Builder & Handlers
+           =================================================================== */
+        const categoryTitles = {
+            hair: 'Выберите прическу',
+            tops: 'Выберите верх / платьице',
+            bottoms: 'Выберите юбку / штаны',
+            shoes: 'Выберите обувь',
+            accessories: 'Выберите аксессуар'
+        };
+
+        const wardrobeGrid = document.getElementById('wardrobeGrid');
+        const categoryTitle = document.getElementById('categoryTitle');
+        const itemCountBadge = document.getElementById('itemCountBadge');
+
+        function renderWardrobeGrid() {
+            const items = wardrobeData[activeCategory];
+            wardrobeGrid.innerHTML = '';
+            categoryTitle.innerHTML = `<i class="fas fa-sparkles text-pink-500"></i> ${categoryTitles[activeCategory]}`;
+            itemCountBadge.textContent = `${items.length} вар.`;
+
+            items.forEach((item) => {
+                const isSelected = currentOutfit[activeCategory] === item.id;
+                const card = document.createElement('button');
+                card.className = `item-card p-3 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition cursor-pointer ${
+                    isSelected 
+                        ? 'border-pink-500 bg-pink-500/10 shadow-md' 
+                        : 'border-white/60 dark:border-gray-700/60 bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800'
+                }`;
+
+                card.innerHTML = `
+                    <div class="text-3xl">${item.icon}</div>
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 text-center">${item.name}</span>
+                `;
+
+                card.addEventListener('click', () => {
+                    currentOutfit[activeCategory] = item.id;
+                    sounds.playPop();
+                    renderAvatar();
+                    renderWardrobeGrid();
+                });
+
+                wardrobeGrid.appendChild(card);
+            });
+        }
+
+        // Tab Switching
+        document.querySelectorAll('.wardrobe-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                document.querySelectorAll('.wardrobe-tab').forEach(t => {
+                    t.className = 'wardrobe-tab flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap text-gray-600 dark:text-gray-300 hover:bg-white/50';
+                });
+                const btn = e.currentTarget;
+                btn.className = 'wardrobe-tab active flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap';
+                activeCategory = btn.dataset.cat;
+                sounds.playPop();
+                renderWardrobeGrid();
+            });
+        });
+
+        /* ===================================================================
+           5. Controls & Action Handlers
+           =================================================================== */
+        const randomizeBtn = document.getElementById('randomizeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const saveBtn = document.getElementById('saveBtn');
         const themeToggleBtn = document.getElementById('themeToggleBtn');
         const soundToggleBtn = document.getElementById('soundToggleBtn');
+        const toast = document.getElementById('toast');
+        const toastText = document.getElementById('toastText');
 
-        /* ===================================================================
-           5. Game Initialization & Rendering
-           =================================================================== */
-        function initBoard() {
-            boardEl.innerHTML = '';
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('button');
-                cell.classList.add(
-                    'cell-btn', 'w-full', 'h-full', 'rounded-2xl', 'flex', 'items-center',
-                    'justify-center', 'text-4xl', 'sm:text-5xl', 'font-black',
-                    'bg-white/40', 'dark:bg-gray-800/40', 'hover:bg-white/70',
-                    'dark:hover:bg-gray-800/70', 'shadow-inner', 'border',
-                    'border-white/50', 'dark:border-gray-700/50'
-                );
-                cell.dataset.index = i;
-                cell.addEventListener('click', () => handleCellClick(i));
-                boardEl.appendChild(cell);
-            }
+        function showToast(text, icon = '✨') {
+            document.getElementById('toastIcon').textContent = icon;
+            toastText.textContent = text;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
         }
 
-        function renderBoard() {
-            const cells = boardEl.children;
-            for (let i = 0; i < 9; i++) {
-                const val = gameState.board[i];
-                const cell = cells[i];
-                cell.innerHTML = '';
-                
-                if (val === 'X') {
-                    cell.innerHTML = `<span class="text-brand-x transform scale-100 transition-transform duration-200">✕</span>`;
-                } else if (val === 'O') {
-                    cell.innerHTML = `<span class="text-brand-o transform scale-100 transition-transform duration-200">◯</span>`;
-                }
-            }
-        }
-
-        /* ===================================================================
-           6. Game Logic Core
-           =================================================================== */
-        function handleCellClick(index) {
-            if (!gameState.gameActive || gameState.board[index] !== null) return;
+        randomizeBtn.addEventListener('click', () => {
+            currentOutfit.hair = Math.floor(Math.random() * wardrobeData.hair.length);
+            currentOutfit.tops = Math.floor(Math.random() * wardrobeData.tops.length);
+            currentOutfit.bottoms = Math.floor(Math.random() * wardrobeData.bottoms.length);
+            currentOutfit.shoes = Math.floor(Math.random() * wardrobeData.shoes.length);
+            currentOutfit.accessories = Math.floor(Math.random() * wardrobeData.accessories.length);
             
-            // Player Move
-            executeMove(index, gameState.currentPlayer);
-
-            // Check if game should continue for AI
-            if (gameState.gameActive && gameState.isAiMode && gameState.currentPlayer === gameState.aiSymbol) {
-                // Disable board during AI thinking
-                gameState.gameActive = false;
-                setTimeout(() => {
-                    gameState.gameActive = true;
-                    makeAiMove();
-                }, 400);
-            }
-        }
-
-        function executeMove(index, symbol) {
-            gameState.board[index] = symbol;
-            sounds.playMove(symbol === 'X');
-            renderBoard();
-
-            const winInfo = checkWin(gameState.board);
-            if (winInfo) {
-                handleWin(winInfo);
-            } else if (gameState.board.every(cell => cell !== null)) {
-                handleTie();
-            } else {
-                gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
-                updateTurnDisplay();
-            }
-        }
-
-        function updateTurnDisplay() {
-            const isX = gameState.currentPlayer === 'X';
-            turnIndicatorText.textContent = isX ? '✕' : '◯';
-            turnIndicatorText.className = isX 
-                ? 'text-blue-600 dark:text-blue-400 font-bold' 
-                : 'text-pink-600 dark:text-pink-400 font-bold';
-        }
-
-        function checkWin(board) {
-            for (let combo of WIN_COMBINATIONS) {
-                const [a, b, c] = combo;
-                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-                    return { winner: board[a], combo };
-                }
-            }
-            return null;
-        }
-
-        function handleWin(winInfo) {
-            gameState.gameActive = false;
-            sounds.playWin();
-
-            // Highlight Winning Cells
-            winInfo.combo.forEach(idx => {
-                const cell = boardEl.children[idx];
-                cell.classList.add('win-cell', 'bg-emerald-200/60', 'dark:bg-emerald-900/50', 'border-emerald-400');
-            });
-
-            // Update Statistics
-            if (gameState.isAiMode) {
-                if (winInfo.winner === gameState.userSymbol) {
-                    gameState.stats.p1++;
-                } else {
-                    gameState.stats.p2++;
-                }
-            } else {
-                if (winInfo.winner === 'X') {
-                    gameState.stats.p1++;
-                } else {
-                    gameState.stats.p2++;
-                }
-            }
-
-            saveStats();
-            turnIndicatorText.textContent = `Победил ${winInfo.winner}! 🎉`;
-            turnIndicatorText.className = 'text-emerald-600 dark:text-emerald-400 font-extrabold';
-        }
-
-        function handleTie() {
-            gameState.gameActive = false;
-            sounds.playTie();
-            gameState.stats.ties++;
-            saveStats();
-
-            turnIndicatorText.textContent = 'Ничья! 🤝';
-            turnIndicatorText.className = 'text-purple-600 dark:text-purple-400 font-extrabold';
-        }
-
-        function resetRound() {
-            gameState.board = Array(9).fill(null);
-            gameState.gameActive = true;
-            gameState.currentPlayer = 'X';
-
-            // Reset cell styles
-            Array.from(boardEl.children).forEach(cell => {
-                cell.className = 'cell-btn w-full h-full rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black bg-white/40 dark:bg-gray-800/40 hover:bg-white/70 dark:hover:bg-gray-800/70 shadow-inner border border-white/50 dark:border-gray-700/50';
-            });
-
-            renderBoard();
-            updateTurnDisplay();
-
-            // If AI moves first
-            if (gameState.isAiMode && gameState.userSymbol === 'O') {
-                gameState.gameActive = false;
-                setTimeout(() => {
-                    gameState.gameActive = true;
-                    makeAiMove();
-                }, 300);
-            }
-        }
-
-        /* ===================================================================
-           7. AI Logic (Easy, Medium, Minimax Hard)
-           =================================================================== */
-        function makeAiMove() {
-            if (!gameState.gameActive) return;
-
-            const emptyIndices = gameState.board
-                .map((val, idx) => val === null ? idx : null)
-                .filter(val => val !== null);
-
-            if (emptyIndices.length === 0) return;
-
-            let chosenIndex;
-
-            if (gameState.aiDifficulty === 'easy') {
-                // Completely Random
-                chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-            } else if (gameState.aiDifficulty === 'medium') {
-                // 50% chance Minimax, 50% Random
-                if (Math.random() > 0.5) {
-                    chosenIndex = minimax(gameState.board, gameState.aiSymbol).index;
-                } else {
-                    chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-                }
-            } else {
-                // Hard: Minimax (Unbeatable)
-                chosenIndex = minimax(gameState.board, gameState.aiSymbol).index;
-            }
-
-            if (chosenIndex !== undefined) {
-                executeMove(chosenIndex, gameState.aiSymbol);
-            }
-        }
-
-        function minimax(newBoard, player) {
-            const availSpots = newBoard.map((v, i) => v === null ? i : null).filter(v => v !== null);
-
-            const win = checkWin(newBoard);
-            if (win) {
-                if (win.winner === gameState.aiSymbol) return { score: 10 };
-                else if (win.winner === gameState.userSymbol) return { score: -10 };
-            } else if (availSpots.length === 0) {
-                return { score: 0 };
-            }
-
-            const moves = [];
-            for (let i = 0; i < availSpots.length; i++) {
-                const move = {};
-                move.index = availSpots[i];
-                newBoard[availSpots[i]] = player;
-
-                if (player === gameState.aiSymbol) {
-                    const result = minimax(newBoard, gameState.userSymbol);
-                    move.score = result.score;
-                } else {
-                    const result = minimax(newBoard, gameState.aiSymbol);
-                    move.score = result.score;
-                }
-
-                newBoard[availSpots[i]] = null;
-                moves.push(move);
-            }
-
-            let bestMove;
-            if (player === gameState.aiSymbol) {
-                let bestScore = -10000;
-                for (let i = 0; i < moves.length; i++) {
-                    if (moves[i].score > bestScore) {
-                        bestScore = moves[i].score;
-                        bestMove = i;
-                    }
-                }
-            } else {
-                let bestScore = 10000;
-                for (let i = 0; i < moves.length; i++) {
-                    if (moves[i].score < bestScore) {
-                        bestScore = moves[i].score;
-                        bestMove = i;
-                    }
-                }
-            }
-
-            return moves[bestMove];
-        }
-
-        /* ===================================================================
-           8. UI Controls & Event Listeners
-           =================================================================== */
-        function updateScoreboardDisplay() {
-            scoreP1El.textContent = gameState.stats.p1;
-            scoreTiesEl.textContent = gameState.stats.ties;
-            scoreP2El.textContent = gameState.stats.p2;
-
-            if (gameState.isAiMode) {
-                p1LabelEl.textContent = `Игрок (${gameState.userSymbol})`;
-                p2LabelEl.textContent = `Бот (${gameState.aiSymbol})`;
-            } else {
-                p1LabelEl.textContent = 'Игрок ✕';
-                p2LabelEl.textContent = 'Игрок ◯';
-            }
-        }
-
-        // Mode Switching
-        modePvPBtn.addEventListener('click', () => {
-            if (!gameState.isAiMode) return;
-            gameState.isAiMode = false;
-            
-            modePvPBtn.className = 'py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400';
-            modeAIBtn.className = 'py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200';
-            aiSettingsEl.classList.add('hidden');
-            
-            resetRound();
-            updateScoreboardDisplay();
+            sounds.playSparkle();
+            renderAvatar();
+            renderWardrobeGrid();
+            showToast('Случайный образ создан!', '🎉');
         });
 
-        modeAIBtn.addEventListener('click', () => {
-            if (gameState.isAiMode) return;
-            gameState.isAiMode = true;
-
-            modeAIBtn.className = 'py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400';
-            modePvPBtn.className = 'py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200';
-            aiSettingsEl.classList.remove('hidden');
-
-            resetRound();
-            updateScoreboardDisplay();
+        resetBtn.addEventListener('click', () => {
+            currentOutfit = { hair: 0, tops: 0, bottoms: 0, shoes: 0, accessories: 0 };
+            sounds.playPop();
+            renderAvatar();
+            renderWardrobeGrid();
+            showToast('Гардероб сброшен!', '🔄');
         });
 
-        // Difficulty Selector
-        document.querySelectorAll('.diff-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.diff-btn').forEach(b => {
-                    b.className = 'diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition';
-                });
-                e.target.className = 'diff-btn px-2.5 py-1 rounded-md bg-blue-600 text-white transition';
-                gameState.aiDifficulty = e.target.dataset.diff;
-                resetRound();
-            });
+        saveBtn.addEventListener('click', () => {
+            sounds.playSparkle();
+            showToast('Образ успешно сохранен в память!', '💖');
         });
 
-        // Symbol Selector
-        selectXBtn.addEventListener('click', () => {
-            if (gameState.userSymbol === 'X') return;
-            gameState.userSymbol = 'X';
-            gameState.aiSymbol = 'O';
-
-            selectXBtn.className = 'px-3 py-1 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold transition';
-            selectOBtn.className = 'px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-pink-500 transition';
-
-            resetRound();
-            updateScoreboardDisplay();
-        });
-
-        selectOBtn.addEventListener('click', () => {
-            if (gameState.userSymbol === 'O') return;
-            gameState.userSymbol = 'O';
-            gameState.aiSymbol = 'X';
-
-            selectOBtn.className = 'px-3 py-1 rounded-lg border-2 border-pink-500 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 font-bold transition';
-            selectXBtn.className = 'px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-blue-500 transition';
-
-            resetRound();
-            updateScoreboardDisplay();
-        });
-
-        // Reset Buttons
-        resetRoundBtn.addEventListener('click', resetRound);
-
-        resetStatsBtn.addEventListener('click', () => {
-            gameState.stats = { p1: 0, ties: 0, p2: 0 };
-            saveStats();
-            resetRound();
-        });
-
-        // Theme Toggle Logic
+        // Theme Toggle
         themeToggleBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
-            const icon = document.getElementById('themeIcon');
-            icon.className = isDark ? 'fas fa-sun text-lg text-amber-400' : 'fas fa-moon text-lg';
-            localStorage.setItem('tictactoe_theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-sun text-amber-400 text-base' : 'fas fa-moon text-base';
+            localStorage.setItem('dressup_theme', isDark ? 'dark' : 'light');
         });
 
-        // Mute Toggle Logic
+        // Sound Toggle
         soundToggleBtn.addEventListener('click', () => {
             sounds.muted = !sounds.muted;
-            const icon = document.getElementById('soundIcon');
-            icon.className = sounds.muted ? 'fas fa-volume-mute text-lg text-red-400' : 'fas fa-volume-up text-lg';
+            document.getElementById('soundIcon').className = sounds.muted ? 'fas fa-volume-mute text-red-400 text-base' : 'fas fa-volume-up text-base';
         });
 
         // Init Theme from Local Storage
-        if (localStorage.getItem('tictactoe_theme') === 'dark' || 
-            (!localStorage.getItem('tictactoe_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        if (localStorage.getItem('dressup_theme') === 'dark' || 
+            (!localStorage.getItem('dressup_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
-            document.getElementById('themeIcon').className = 'fas fa-sun text-lg text-amber-400';
+            document.getElementById('themeIcon').className = 'fas fa-sun text-amber-400 text-base';
         }
 
         /* ===================================================================
-           9. Entry Point Initialization
+           6. Application Initialization
            =================================================================== */
         window.onload = function() {
-            initBoard();
-            loadStats();
-            resetRound();
+            renderAvatar();
+            renderWardrobeGrid();
         };
     </script>
 </body>
