@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крестики-Нолики | Tic-Tac-Toe Pro</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            x: '#3B82F6', // Blue
+                            o: '#EC4899', // Pink
+                            accent: '#8B5CF6', // Purple
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Glassmorphism Backgrounds */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .dark .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-card {
+            background: rgba(31, 41, 55, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Cell animations and active states */
+        .cell-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cell-btn:active {
+            transform: scale(0.92);
+        }
+
+        .win-cell {
+            animation: pulse-glow 1.2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); filter: brightness(1); }
+            100% { transform: scale(1.03); filter: brightness(1.25); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 dark:from-gray-950 dark:via-gray-900 dark:to-slate-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+    <!-- Top Bar Header -->
+    <header class="w-full max-w-4xl mx-auto px-4 pt-4 pb-2 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-md font-bold text-xl">
+                ✕◯
+            </div>
+            <h1 class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                TicTacToe Pro
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Mute Audio Toggle -->
+            <button id="soundToggleBtn" title="Включить/Выключить звук" class="p-2.5 rounded-xl glass-card hover:bg-white/80 dark:hover:bg-gray-800/80 transition text-gray-700 dark:text-gray-200">
+                <i id="soundIcon" class="fas fa-volume-up text-lg"></i>
+            </button>
+            <!-- Theme Toggle Button -->
+            <button id="themeToggleBtn" title="Сменить тему" class="p-2.5 rounded-xl glass-card hover:bg-white/80 dark:hover:bg-gray-800/80 transition text-gray-700 dark:text-gray-200">
+                <i id="themeIcon" class="fas fa-moon text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="w-full max-w-lg mx-auto px-4 my-auto py-2 flex flex-col gap-4">
+        
+        <!-- Game Configuration Panel -->
+        <div class="glass-panel p-4 rounded-2xl shadow-xl flex flex-col gap-3">
+            <!-- Game Mode Switcher -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-200/60 dark:bg-gray-800/60 rounded-xl text-xs font-semibold">
+                <button id="modePvP" class="py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400">
+                    <i class="fas fa-users mr-1"></i> Игрок vs Игрок
+                </button>
+                <button id="modeAI" class="py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                    <i class="fas fa-robot mr-1"></i> Игрок vs Бот
+                </button>
+            </div>
+
+            <!-- AI Sub-settings (Hidden when PvP) -->
+            <div id="aiSettings" class="hidden flex flex-col gap-2 pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div class="flex items-center justify-between text-xs font-medium">
+                    <span class="text-gray-600 dark:text-gray-400">Сложность бота:</span>
+                    <div class="flex gap-1">
+                        <button data-diff="easy" class="diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition">Легко</button>
+                        <button data-diff="medium" class="diff-btn px-2.5 py-1 rounded-md bg-blue-600 text-white transition">Средне</button>
+                        <button data-diff="hard" class="diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition">Мастер</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Symbol Selection -->
+            <div class="flex items-center justify-between text-xs font-medium pt-1 border-t border-gray-200/50 dark:border-gray-700/50">
+                <span class="text-gray-600 dark:text-gray-400">Первый ход за:</span>
+                <div class="flex gap-2">
+                    <button id="selectX" class="px-3 py-1 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold transition">
+                        ✕ (Крестик)
+                    </button>
+                    <button id="selectO" class="px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-pink-500 transition">
+                        ◯ (Нолик)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scoreboard Panel -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-blue-500">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="p1Label">Игрок X</div>
+                <div class="text-2xl font-extrabold text-blue-600 dark:text-blue-400" id="scoreP1">0</div>
+            </div>
+            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-purple-500">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">Ничьи</div>
+                <div class="text-2xl font-extrabold text-purple-600 dark:text-purple-400" id="scoreTies">0</div>
+            </div>
+            <div class="glass-panel p-3 rounded-xl shadow-md border-b-4 border-pink-500">
+                <div class="text-xs text-gray-500 dark:text-gray-400 font-medium" id="p2Label">Игрок O</div>
+                <div class="text-2xl font-extrabold text-pink-600 dark:text-pink-400" id="scoreP2">0</div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="text-center py-1">
+            <span id="turnIndicator" class="inline-block px-4 py-1.5 rounded-full glass-card font-semibold text-sm shadow-sm border border-white/40 dark:border-gray-700">
+                Ход: <span id="currentTurnText" class="text-blue-600 dark:text-blue-400 font-bold">✕</span>
+            </span>
+        </div>
+
+        <!-- Game Board Matrix -->
+        <div class="relative aspect-square w-full max-w-[360px] mx-auto">
+            <div id="board" class="grid grid-cols-3 gap-3 w-full h-full p-3 glass-panel rounded-3xl shadow-2xl">
+                <!-- Cells generated via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="flex justify-between gap-3 mt-2">
+            <button id="resetRoundBtn" class="flex-1 py-3 px-4 glass-panel hover:bg-white/90 dark:hover:bg-gray-800/90 text-gray-700 dark:text-gray-200 font-bold text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2">
+                <i class="fas fa-rotate-right text-blue-500"></i> Сбросить раунд
+            </button>
+            <button id="resetStatsBtn" class="py-3 px-4 glass-panel hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 font-bold text-sm rounded-xl transition shadow-md flex items-center justify-center gap-2" title="Сбросить всю статистику">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-3 text-xs text-gray-500 dark:text-gray-400">
+        Готово для GitHub Pages • Made with <i class="fas fa-heart text-red-500"></i>
+    </footer>
+
+    <script>
+        /* ===================================================================
+           1. Web Audio API Engine (Sound Effects without external files)
+           =================================================================== */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playMove(isX) {
+                if (this.muted) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                
+                // Frequency pitch depending on symbol
+                osc.frequency.setValueAtTime(isX ? 520 : 400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(isX ? 260 : 200, this.ctx.currentTime + 0.08);
+
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+            playWin() {
+                if (this.muted) return;
+                this.init();
+                const notes = [440, 554.37, 659.25, 880]; // A major arpeggio
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
+
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + idx * 0.08);
+                    osc.stop(this.ctx.currentTime + idx * 0.08 + 0.3);
+                });
+            }
+
+            playTie() {
+                if (this.muted) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(150, this.ctx.currentTime + 0.25);
+
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+        }
+
+        const sounds = new SoundEngine();
+
+        /* ===================================================================
+           2. State Management & Variables
+           =================================================================== */
+        const WIN_COMBINATIONS = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        let gameState = {
+            board: Array(9).fill(null),
+            currentPlayer: 'X',
+            userSymbol: 'X',
+            aiSymbol: 'O',
+            isAiMode: false,
+            aiDifficulty: 'medium', // 'easy', 'medium', 'hard'
+            gameActive: true,
+            stats: { p1: 0, ties: 0, p2: 0 }
+        };
+
+        /* ===================================================================
+           3. LocalStorage Handling
+           =================================================================== */
+        function loadStats() {
+            const saved = localStorage.getItem('tictactoe_stats');
+            if (saved) {
+                try {
+                    gameState.stats = JSON.parse(saved);
+                } catch (e) {
+                    console.error("Failed to parse saved stats", e);
+                }
+            }
+            updateScoreboardDisplay();
+        }
+
+        function saveStats() {
+            localStorage.setItem('tictactoe_stats', JSON.stringify(gameState.stats));
+            updateScoreboardDisplay();
+        }
+
+        /* ===================================================================
+           4. DOM Elements
+           =================================================================== */
+        const boardEl = document.getElementById('board');
+        const turnIndicatorText = document.getElementById('currentTurnText');
+        const modePvPBtn = document.getElementById('modePvP');
+        const modeAIBtn = document.getElementById('modeAI');
+        const aiSettingsEl = document.getElementById('aiSettings');
+        const selectXBtn = document.getElementById('selectX');
+        const selectOBtn = document.getElementById('selectO');
+        const scoreP1El = document.getElementById('scoreP1');
+        const scoreTiesEl = document.getElementById('scoreTies');
+        const scoreP2El = document.getElementById('scoreP2');
+        const p1LabelEl = document.getElementById('p1Label');
+        const p2LabelEl = document.getElementById('p2Label');
+        const resetRoundBtn = document.getElementById('resetRoundBtn');
+        const resetStatsBtn = document.getElementById('resetStatsBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+
+        /* ===================================================================
+           5. Game Initialization & Rendering
+           =================================================================== */
+        function initBoard() {
+            boardEl.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('button');
+                cell.classList.add(
+                    'cell-btn', 'w-full', 'h-full', 'rounded-2xl', 'flex', 'items-center',
+                    'justify-center', 'text-4xl', 'sm:text-5xl', 'font-black',
+                    'bg-white/40', 'dark:bg-gray-800/40', 'hover:bg-white/70',
+                    'dark:hover:bg-gray-800/70', 'shadow-inner', 'border',
+                    'border-white/50', 'dark:border-gray-700/50'
+                );
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleCellClick(i));
+                boardEl.appendChild(cell);
+            }
+        }
+
+        function renderBoard() {
+            const cells = boardEl.children;
+            for (let i = 0; i < 9; i++) {
+                const val = gameState.board[i];
+                const cell = cells[i];
+                cell.innerHTML = '';
+                
+                if (val === 'X') {
+                    cell.innerHTML = `<span class="text-brand-x transform scale-100 transition-transform duration-200">✕</span>`;
+                } else if (val === 'O') {
+                    cell.innerHTML = `<span class="text-brand-o transform scale-100 transition-transform duration-200">◯</span>`;
+                }
+            }
+        }
+
+        /* ===================================================================
+           6. Game Logic Core
+           =================================================================== */
+        function handleCellClick(index) {
+            if (!gameState.gameActive || gameState.board[index] !== null) return;
+            
+            // Player Move
+            executeMove(index, gameState.currentPlayer);
+
+            // Check if game should continue for AI
+            if (gameState.gameActive && gameState.isAiMode && gameState.currentPlayer === gameState.aiSymbol) {
+                // Disable board during AI thinking
+                gameState.gameActive = false;
+                setTimeout(() => {
+                    gameState.gameActive = true;
+                    makeAiMove();
+                }, 400);
+            }
+        }
+
+        function executeMove(index, symbol) {
+            gameState.board[index] = symbol;
+            sounds.playMove(symbol === 'X');
+            renderBoard();
+
+            const winInfo = checkWin(gameState.board);
+            if (winInfo) {
+                handleWin(winInfo);
+            } else if (gameState.board.every(cell => cell !== null)) {
+                handleTie();
+            } else {
+                gameState.currentPlayer = gameState.currentPlayer === 'X' ? 'O' : 'X';
+                updateTurnDisplay();
+            }
+        }
+
+        function updateTurnDisplay() {
+            const isX = gameState.currentPlayer === 'X';
+            turnIndicatorText.textContent = isX ? '✕' : '◯';
+            turnIndicatorText.className = isX 
+                ? 'text-blue-600 dark:text-blue-400 font-bold' 
+                : 'text-pink-600 dark:text-pink-400 font-bold';
+        }
+
+        function checkWin(board) {
+            for (let combo of WIN_COMBINATIONS) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return { winner: board[a], combo };
+                }
+            }
+            return null;
+        }
+
+        function handleWin(winInfo) {
+            gameState.gameActive = false;
+            sounds.playWin();
+
+            // Highlight Winning Cells
+            winInfo.combo.forEach(idx => {
+                const cell = boardEl.children[idx];
+                cell.classList.add('win-cell', 'bg-emerald-200/60', 'dark:bg-emerald-900/50', 'border-emerald-400');
+            });
+
+            // Update Statistics
+            if (gameState.isAiMode) {
+                if (winInfo.winner === gameState.userSymbol) {
+                    gameState.stats.p1++;
+                } else {
+                    gameState.stats.p2++;
+                }
+            } else {
+                if (winInfo.winner === 'X') {
+                    gameState.stats.p1++;
+                } else {
+                    gameState.stats.p2++;
+                }
+            }
+
+            saveStats();
+            turnIndicatorText.textContent = `Победил ${winInfo.winner}! 🎉`;
+            turnIndicatorText.className = 'text-emerald-600 dark:text-emerald-400 font-extrabold';
+        }
+
+        function handleTie() {
+            gameState.gameActive = false;
+            sounds.playTie();
+            gameState.stats.ties++;
+            saveStats();
+
+            turnIndicatorText.textContent = 'Ничья! 🤝';
+            turnIndicatorText.className = 'text-purple-600 dark:text-purple-400 font-extrabold';
+        }
+
+        function resetRound() {
+            gameState.board = Array(9).fill(null);
+            gameState.gameActive = true;
+            gameState.currentPlayer = 'X';
+
+            // Reset cell styles
+            Array.from(boardEl.children).forEach(cell => {
+                cell.className = 'cell-btn w-full h-full rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black bg-white/40 dark:bg-gray-800/40 hover:bg-white/70 dark:hover:bg-gray-800/70 shadow-inner border border-white/50 dark:border-gray-700/50';
+            });
+
+            renderBoard();
+            updateTurnDisplay();
+
+            // If AI moves first
+            if (gameState.isAiMode && gameState.userSymbol === 'O') {
+                gameState.gameActive = false;
+                setTimeout(() => {
+                    gameState.gameActive = true;
+                    makeAiMove();
+                }, 300);
+            }
+        }
+
+        /* ===================================================================
+           7. AI Logic (Easy, Medium, Minimax Hard)
+           =================================================================== */
+        function makeAiMove() {
+            if (!gameState.gameActive) return;
+
+            const emptyIndices = gameState.board
+                .map((val, idx) => val === null ? idx : null)
+                .filter(val => val !== null);
+
+            if (emptyIndices.length === 0) return;
+
+            let chosenIndex;
+
+            if (gameState.aiDifficulty === 'easy') {
+                // Completely Random
+                chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            } else if (gameState.aiDifficulty === 'medium') {
+                // 50% chance Minimax, 50% Random
+                if (Math.random() > 0.5) {
+                    chosenIndex = minimax(gameState.board, gameState.aiSymbol).index;
+                } else {
+                    chosenIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                }
+            } else {
+                // Hard: Minimax (Unbeatable)
+                chosenIndex = minimax(gameState.board, gameState.aiSymbol).index;
+            }
+
+            if (chosenIndex !== undefined) {
+                executeMove(chosenIndex, gameState.aiSymbol);
+            }
+        }
+
+        function minimax(newBoard, player) {
+            const availSpots = newBoard.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+            const win = checkWin(newBoard);
+            if (win) {
+                if (win.winner === gameState.aiSymbol) return { score: 10 };
+                else if (win.winner === gameState.userSymbol) return { score: -10 };
+            } else if (availSpots.length === 0) {
+                return { score: 0 };
+            }
+
+            const moves = [];
+            for (let i = 0; i < availSpots.length; i++) {
+                const move = {};
+                move.index = availSpots[i];
+                newBoard[availSpots[i]] = player;
+
+                if (player === gameState.aiSymbol) {
+                    const result = minimax(newBoard, gameState.userSymbol);
+                    move.score = result.score;
+                } else {
+                    const result = minimax(newBoard, gameState.aiSymbol);
+                    move.score = result.score;
+                }
+
+                newBoard[availSpots[i]] = null;
+                moves.push(move);
+            }
+
+            let bestMove;
+            if (player === gameState.aiSymbol) {
+                let bestScore = -10000;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                let bestScore = 10000;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+
+            return moves[bestMove];
+        }
+
+        /* ===================================================================
+           8. UI Controls & Event Listeners
+           =================================================================== */
+        function updateScoreboardDisplay() {
+            scoreP1El.textContent = gameState.stats.p1;
+            scoreTiesEl.textContent = gameState.stats.ties;
+            scoreP2El.textContent = gameState.stats.p2;
+
+            if (gameState.isAiMode) {
+                p1LabelEl.textContent = `Игрок (${gameState.userSymbol})`;
+                p2LabelEl.textContent = `Бот (${gameState.aiSymbol})`;
+            } else {
+                p1LabelEl.textContent = 'Игрок ✕';
+                p2LabelEl.textContent = 'Игрок ◯';
+            }
+        }
+
+        // Mode Switching
+        modePvPBtn.addEventListener('click', () => {
+            if (!gameState.isAiMode) return;
+            gameState.isAiMode = false;
+            
+            modePvPBtn.className = 'py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400';
+            modeAIBtn.className = 'py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200';
+            aiSettingsEl.classList.add('hidden');
+            
+            resetRound();
+            updateScoreboardDisplay();
+        });
+
+        modeAIBtn.addEventListener('click', () => {
+            if (gameState.isAiMode) return;
+            gameState.isAiMode = true;
+
+            modeAIBtn.className = 'py-2 rounded-lg transition-all shadow-sm bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400';
+            modePvPBtn.className = 'py-2 rounded-lg transition-all text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200';
+            aiSettingsEl.classList.remove('hidden');
+
+            resetRound();
+            updateScoreboardDisplay();
+        });
+
+        // Difficulty Selector
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.diff-btn').forEach(b => {
+                    b.className = 'diff-btn px-2.5 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-blue-500 hover:text-white transition';
+                });
+                e.target.className = 'diff-btn px-2.5 py-1 rounded-md bg-blue-600 text-white transition';
+                gameState.aiDifficulty = e.target.dataset.diff;
+                resetRound();
+            });
+        });
+
+        // Symbol Selector
+        selectXBtn.addEventListener('click', () => {
+            if (gameState.userSymbol === 'X') return;
+            gameState.userSymbol = 'X';
+            gameState.aiSymbol = 'O';
+
+            selectXBtn.className = 'px-3 py-1 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold transition';
+            selectOBtn.className = 'px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-pink-500 transition';
+
+            resetRound();
+            updateScoreboardDisplay();
+        });
+
+        selectOBtn.addEventListener('click', () => {
+            if (gameState.userSymbol === 'O') return;
+            gameState.userSymbol = 'O';
+            gameState.aiSymbol = 'X';
+
+            selectOBtn.className = 'px-3 py-1 rounded-lg border-2 border-pink-500 bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 font-bold transition';
+            selectXBtn.className = 'px-3 py-1 rounded-lg border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 font-bold hover:border-blue-500 transition';
+
+            resetRound();
+            updateScoreboardDisplay();
+        });
+
+        // Reset Buttons
+        resetRoundBtn.addEventListener('click', resetRound);
+
+        resetStatsBtn.addEventListener('click', () => {
+            gameState.stats = { p1: 0, ties: 0, p2: 0 };
+            saveStats();
+            resetRound();
+        });
+
+        // Theme Toggle Logic
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('themeIcon');
+            icon.className = isDark ? 'fas fa-sun text-lg text-amber-400' : 'fas fa-moon text-lg';
+            localStorage.setItem('tictactoe_theme', isDark ? 'dark' : 'light');
+        });
+
+        // Mute Toggle Logic
+        soundToggleBtn.addEventListener('click', () => {
+            sounds.muted = !sounds.muted;
+            const icon = document.getElementById('soundIcon');
+            icon.className = sounds.muted ? 'fas fa-volume-mute text-lg text-red-400' : 'fas fa-volume-up text-lg';
+        });
+
+        // Init Theme from Local Storage
+        if (localStorage.getItem('tictactoe_theme') === 'dark' || 
+            (!localStorage.getItem('tictactoe_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('themeIcon').className = 'fas fa-sun text-lg text-amber-400';
+        }
+
+        /* ===================================================================
+           9. Entry Point Initialization
+           =================================================================== */
+        window.onload = function() {
+            initBoard();
+            loadStats();
+            resetRound();
+        };
+    </script>
+</body>
+</html>
